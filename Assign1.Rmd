@@ -1,0 +1,115 @@
+---
+title: "Assignment1"
+author: "Eunhee Lee"
+date: "April 25, 2017"
+output: html_document
+---
+
+
+##boxplot
+
+```{r clim, eval=TRUE, echo=TRUE, warning=FALSE}
+clim = read.table("clim.txt", header=TRUE)
+Aggdata <- aggregate(clim, by=list(clim$month, clim$year), FUN="mean")
+Aggdata$Tmean <- (Aggdata$tmax+Aggdata$tmin)/2
+boxplot(Aggdata$Tmean ~ Aggdata$month,main ="Average temperature by month from 1942 to 2016", ylab="Temperature", xlab="month", col="orange")
+boxplot(Aggdata$rain~Aggdata$month,main ="Precipitation by month from 1942 to 2016", ylab="Precipitation", xlab="month", col="blue")
+boxplot(Aggdata$rain~Aggdata$year,main ="Precipitation by year from 1942 to 2016", ylab="Precipitation", xlab="year", col="skyblue")
+
+# Aggregate precipitation by year 
+clim2 <- clim[,2:7]
+Aggdata2 <- aggregate(clim2, by=list(clim2$year), FUN="sum")
+
+# what is the wettest year  (precipitation per year)
+Wetyear=which.max(Aggdata2$rain)
+Aggdata2[Wetyear,c("Group.1","rain")]
+Aggdata2$year= as.integer(Aggdata2$Group.1)
+Aggdata2$rain = as.integer(Aggdata2$rain)
+Aggdata2[Wetyear,c("year","rain")]
+
+
+# what is the driest year (precipitation per year)
+Dryyear=which.min(Aggdata2$rain)
+Aggdata2[Dryyear,c("Group.1","rain")]
+Aggdata2[Dryyear,c("year","rain")]
+
+
+
+```
+
+## The driest year
+
+<div align="center">
+<img src = "drought.jpg" height=400>
+</div>
+
+## The wettest year
+
+<div align="center">
+<img src = "flood.jpg" height=400>
+</div>
+
+
+## Season
+```{r eval=TRUE, echo=TRUE, warning=FALSE}
+clim2$Season <- ifelse(clim2$month <= 5 & clim2$month >= 3, 1, ifelse(clim2$month <= 8, 2,(ifelse(clim2$month <= 11, 3, 4))))
+## the wettest season (mean season precipitation)
+Aggdata4 <- aggregate(clim2, by=list(clim2$Season, clim2$year), FUN="sum")
+Seasonagg <- Aggdata4[,c(1,2,5)]
+colnames(Seasonagg) <- c("Season", "year", "rain")
+c("Season","year","tmax","tmin","rain","summedyear","")
+Aggdata3 <-aggregate(Seasonagg, by=list(Seasonagg$Season), FUN="mean")
+Wetseason = which.max(Aggdata3$rain)
+Aggdata3[Wetseason,c("Group.1","rain")]
+Aggdata3$rain = as.integer(Aggdata3$rain)
+Aggdata3[Wetseason,c("Season","rain")]
+
+## the driest season (mean season precipitation)
+Dryseason = which.min(Aggdata3$rain)
+Aggdata3[Dryseason,c("Group.1","rain")]
+Aggdata3$rain = as.integer(Aggdata3$rain)
+Aggdata3[Dryseason,c("Season","rain")]
+
+
+## relationship between precipitation and temperature 
+Aggdata5 <- aggregate(clim2, by=list(clim2$Season, clim2$year), FUN="mean")
+Aggdata5$Tmean <- (Aggdata5$tmax + Aggdata5$tmin)/2
+Summertem <- subset(Aggdata5, Season == 2)
+Winterrain <- subset(Aggdata5, Season == 4)
+Reltemrain <- merge(Summertem, Winterrain,by="year")
+
+library(ggplot2)
+ggplot(Reltemrain, aes(Tmean.x,rain.y))+
+  geom_point(size=2)+ # creat scatter plot, and dot as blank circles
+  geom_smooth(method="lm", se=FALSE)+ # creat a trend line
+  xlab("Average Temperature") + 
+  ylab("Average Precipitation") +
+  ggtitle("relationship between summer temperature and winter precipitation")+
+  theme_bw() +
+  theme(text=element_text(family ="Times", size=14), panel.grid.major = element_blank(),panel.grid.minor = element_blank())
+
+
+```
+
+
+
+
+## Assigment
+
+Given a climate data set (clim.txt), 
+do the following tasks and document your work in an R-markdown document and store it in your repository- add the name of the repository to gauchospace
+
+ _Tasks_
+
+* read in the file **read.table("clim.txt", header=TRUE)**
+* graph precipitation and average temperature by month, using a box plot
+* find wettest and driest years
+* add two pictures to illustrate what a wet and dry year might look like for the ecosystem of your choice
+* create a new variable that is 1 when its spring, and 2 when its summer, 3 with its fall and 4 when its winter (eg. split your year in to 4, 3 month periods)
+* find wettest and driest seasons
+* graph the relationship between winter precipitation and summer temperature 
+* add some text to describe the graph and comment on why this might be useful to look at
+* make at least one edit to your file and commit
+changes
+* make sure your work includes code, headings
+* output your work  to a pdf and then to slides
