@@ -6,38 +6,49 @@ output: html_document
 ---
 
 
-##boxplots
 
-```{r clim, eval=TRUE, echo=TRUE, warning=FALSE}
+## Average temperature by month from 1942 to 2016
+
+```{r eval=TRUE, echo=TRUE, warning=FALSE}
 clim = read.table("clim.txt", header=TRUE)
 Aggdata <- aggregate(clim, by=list(clim$month, clim$year), FUN="mean")
 Aggdata$Tmean <- (Aggdata$tmax+Aggdata$tmin)/2
-boxplot(Aggdata$Tmean ~ Aggdata$month,main ="Average temperature by month from 1942 to 2016", ylab="Temperature", xlab="month", col="orange")
-boxplot(Aggdata$rain~Aggdata$month,main ="Precipitation by month from 1942 to 2016", ylab="Precipitation", xlab="month", col="blue")
-boxplot(Aggdata$rain~Aggdata$year,main ="Precipitation by year from 1942 to 2016", ylab="Precipitation", xlab="year", col="skyblue")
+boxplot(Aggdata$Tmean ~ Aggdata$month, ylab="Temperature(℃)", xlab="month", col="orange")
+```
 
-# Aggregate precipitation by year 
+
+
+## Precipitation by month from 1942 to 2016
+```{r eval=TRUE, echo=TRUE, warning=FALSE}
 clim2 <- clim[,2:7]
+Aggrain <- aggregate(clim2, by=list(clim2$month, clim2$year), FUN="sum")
+boxplot(Aggrain$rain~Aggrain$Group.1, ylab=" Precipitation(mm)", xlab="month", col="blue")
+```
+
+## The Wettest year
+```{r eval=TRUE, echo=TRUE, warning=FALSE}
+# Aggregate precipitation by year 
 Aggdata2 <- aggregate(clim2, by=list(clim2$year), FUN="sum")
 
-# what is the wettest year  (precipitation per year)
+# what is the wettest year (total precipitation per year)
 Wetyear=which.max(Aggdata2$rain)
 Aggdata2[Wetyear,c("Group.1","rain")]
 Aggdata2$year= as.integer(Aggdata2$Group.1)
 Aggdata2$rain = as.integer(Aggdata2$rain)
 Aggdata2[Wetyear,c("year","rain")]
+```
 
 
-# what is the driest year (precipitation per year)
+## The driest year
+```{r eval=TRUE, echo=TRUE, warning=FALSE}
+# what is the driest year (total precipitation per year)
 Dryyear=which.min(Aggdata2$rain)
 Aggdata2[Dryyear,c("Group.1","rain")]
 Aggdata2[Dryyear,c("year","rain")]
 
-
-
 ```
 
-## The pictur of a dry year
+## The picture of a dry year
 
 <div align="left">
 <img src = "drought.jpg" height=300, width=400>
@@ -50,45 +61,59 @@ Aggdata2[Dryyear,c("year","rain")]
 </div>
 
 
-## Season
+## Addition of season column
+
 ```{r eval=TRUE, echo=TRUE, warning=FALSE}
 clim2$Season <- ifelse(clim2$month <= 5 & clim2$month >= 3, 1, ifelse(clim2$month <= 8, 2,(ifelse(clim2$month <= 11, 3, 4))))
-## the wettest season (mean season precipitation)
+```
+
+## The wettest season (mean season precipitation)
+```{r eval=TRUE, echo=TRUE, warning=FALSE}
 Aggdata4 <- aggregate(clim2, by=list(clim2$Season, clim2$year), FUN="sum")
 Seasonagg <- Aggdata4[,c(1,2,5)]
 colnames(Seasonagg) <- c("Season", "year", "rain")
-c("Season","year","tmax","tmin","rain","summedyear","")
 Aggdata3 <-aggregate(Seasonagg, by=list(Seasonagg$Season), FUN="mean")
 Wetseason = which.max(Aggdata3$rain)
 Aggdata3[Wetseason,c("Group.1","rain")]
 Aggdata3$rain = as.integer(Aggdata3$rain)
 Aggdata3[Wetseason,c("Season","rain")]
 
-## the driest season (mean season precipitation)
+```
+
+
+## The driest season (mean season precipitation)
+```{r eval=TRUE, echo=TRUE, warning=FALSE}
 Dryseason = which.min(Aggdata3$rain)
 Aggdata3[Dryseason,c("Group.1","rain")]
 Aggdata3$rain = as.integer(Aggdata3$rain)
 Aggdata3[Dryseason,c("Season","rain")]
+```
 
+## Relationship between winter precipitation and summer temperature 
+```{r eval=TRUE, echo=TRUE, warning=FALSE}
 
-## relationship between precipitation and temperature 
 Aggdata5 <- aggregate(clim2, by=list(clim2$Season, clim2$year), FUN="mean")
 Aggdata5$Tmean <- (Aggdata5$tmax + Aggdata5$tmin)/2
 Summertem <- subset(Aggdata5, Season == 2)
-Winterrain <- subset(Aggdata5, Season == 4)
+Winterrain <- subset(Seasonagg, Season == 4)
 Reltemrain <- merge(Summertem, Winterrain,by="year")
 
 library(ggplot2)
-ggplot(Reltemrain, aes(Tmean.x,rain.y))+
+ggplot(Reltemrain, aes(Tmean,rain.y))+
   geom_point(size=2)+ # creat scatter plot, and dot as blank circles
   geom_smooth(method="lm", se=FALSE)+ # creat a trend line
-  xlab("Average Temperature") + 
-  ylab("Average Precipitation") +
-  ggtitle("relationship between summer temperature and winter precipitation")+
+  xlab("Average Summer Temperature(℃)")+
+  ylab("Winter Precipitation(mm)") +
   theme_bw() +
   theme(text=element_text(family ="Times", size=14), panel.grid.major = element_blank(),panel.grid.minor = element_blank())
 
+lmtemrain <- lm(rain.y ~ Tmean, data=Reltemrain)
+summary(lmtemrain) 
+
 
 ```
+
+As the trend line in the graph shows, the linear regression revealed that the winter precipitation decreases slightly as the average summer temperature increases. However, the precipitation only declines by 1mm during winter when the average temperature rises by 1&deg;C, showing a nearly flat line. This result indicates that the winter precipitation may not have a significant relationship with the summer temperature.  
+
 
 
