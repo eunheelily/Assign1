@@ -2,9 +2,10 @@
 title: "Assignment1"
 author: "Eunhee Lee"
 date: "April 25, 2017"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
-
 
 
 ## Average temperature by month from 1942 to 2016
@@ -13,7 +14,7 @@ output: html_document
 clim = read.table("clim.txt", header=TRUE)
 Aggdata <- aggregate(clim, by=list(clim$month, clim$year), FUN="mean")
 Aggdata$Tmean <- (Aggdata$tmax+Aggdata$tmin)/2
-boxplot(Aggdata$Tmean ~ Aggdata$month, ylab="Temperature(℃)", xlab="month", col="orange")
+boxplot(Aggdata$Tmean ~ Aggdata$month, ylab="Temperature(C)", xlab="month", col="orange")
 ```
 
 
@@ -102,7 +103,7 @@ library(ggplot2)
 ggplot(Reltemrain, aes(Tmean,rain.y))+
   geom_point(size=2)+ # creat scatter plot, and dot as blank circles
   geom_smooth(method="lm", se=FALSE)+ # creat a trend line
-  xlab("Average Summer Temperature(℃)")+
+  xlab("Average Summer Temperature(C)")+
   ylab("Winter Precipitation(mm)") +
   theme_bw() +
   theme(text=element_text(family ="Times", size=14), panel.grid.major = element_blank(),panel.grid.minor = element_blank())
