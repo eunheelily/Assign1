@@ -1,5 +1,5 @@
 ---
-title: "Assignment1"
+title: "Assignment 1"
 author: "Eunhee Lee"
 date: "April 25, 2017"
 output:
@@ -26,7 +26,7 @@ Aggrain <- aggregate(clim2, by=list(clim2$month, clim2$year), FUN="sum")
 boxplot(Aggrain$rain~Aggrain$Group.1, ylab=" Precipitation(mm)", xlab="month", col="blue")
 ```
 
-## The Wettest year
+## The wettest year
 ```{r eval=TRUE, echo=TRUE, warning=FALSE}
 # Aggregate precipitation by year 
 Aggdata2 <- aggregate(clim2, by=list(clim2$year), FUN="sum")
